@@ -1,0 +1,47 @@
+services:
+  nginx:
+    build: ./nginx
+    container_name: nginx-proxy
+    ports:
+      - "80:80"
+    depends_on:
+      - app1
+      - app2
+    networks:
+      - app_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+    restart: unless-stopped
+
+  app1:
+    build: ./app1
+    container_name: app1
+    networks:
+      - app_network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:5000/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+    restart: unless-stopped
+
+  app2:
+    build: ./app2
+    container_name: app2
+    networks:
+      - app_network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:5000/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+    restart: unless-stopped
+networks:
+  app_network:
+    driver: bridge
